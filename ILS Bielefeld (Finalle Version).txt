@@ -1,0 +1,378 @@
+// ==UserScript==
+// @name         ILS Bielefeld (Finalle Version)
+// @version      1.0.2
+// @description  ~ no description provided ~
+// @author       NiZi112
+// @match        *://rettungssimulator.online/*
+// @match        *://beta.rettungssimulator.online/*
+// @match        *://rettungssimulator.online/missionNew/*
+// @match        *://beta.rettungssimulator.online/missionNew/*
+// @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
+// ==/UserScript==
+/* global $ toggleMap socket systemMessage noticeModal hideModal replaceFunc */
+function keywordsAd() {
+    'use strict';
+    const worte = ["Verdachtsdiagnose","----------","Anaphylaktischer Schock","Asthmatischer Anfall","Atemnot","Beginnende Geburt","Bewußtlosigkeit","Herzinfarkt","Hypertonie"
+                   ,"Intoxikationen Med","Intoxikationen Gas","Kopfplatzwunde","Kreislaufbeschwerden","Lumbago","Nicht ansprechbare Person","Rauchgasinhalation","Rückenschmerzen","Schenkelhalsfraktur"
+                   ,"Schulterluxation","Synkope","Tibiafraktur","Varitzenblutung","","VU Straßenbahn","VU Bus","VU Motorrad","VU Person","VU Fahrad","VU LKW","",]
+    var html_string = "<span style='overflow:auto'>"
+    for (var i = 0; i < worte.length; i++) {
+        html_string += `<span onclick='$("#iframe").contents().find("#patientDiagnose").val(this.innerHTML)'>${worte[i]}</span><br>`;
+    };
+    html_string += "</span>"
+    $("#ad").append(html_string);
+};
+function colorAlarm() {
+    'use strict';
+    var neu = document.createElement("style");
+    neu.innerHTML = "#missionForm{border-color: light green; color: light green;} #missionForm:hover{background-color: yellow; color: red; border-color: red;}"
+    var vater = document.head;
+    document.head.appendChild(neu);
+};
+function bigMap() {
+    'use strict';
+    function toggleBigMap(){
+        setTimeout(function(){
+            toggleMap();
+        }, 1000)
+        $('header').remove();
+    };
+    if(window.location.href.endsWith('#map=true') || window.location.href.endsWith('&map=true') || window.location.href.includes('#map=true') || window.location.href.includes('&map=true')){
+        $(document).ready(toggleBigMap)
+    }else{
+        $('#ad').append('<br><a href="https://rettungssimulator.online/#map=true" class="button button-success button-round no-prevent" style="width:18%" target="_blank">Karte</a>'," ",)
+    };
+};
+function chatMessage() {
+    'use strict';
+    socket.on("associationMessage", (msg) =>{
+        if(msg.message && msg.userName != $(".username .frame-opener").html()){
+            systemMessage({
+                'title':`${msg.userName}`,
+                'message':`<span id="chatMessageAlert">${msg.message}</span>`,
+                'type':'info'
+            });
+            hideModal();
+        }
+    });
+}
+function wordsChat() {
+    'use strict';
+    const orte = ["<h3>Orte und Gemeinden:</h1>"
+                  ,"Anröchte","Ahlen","Alverdissen","Bielefeld","Bad Sassendorf","Brackwede","Beckum","Bünde","Büren","Belecke","Bad Salzufeln","Blomberg","Bösingfeld","Barntrup"
+                  ,"Detmold","Delbrück","Drensteinfurt","Dürentrup","Erwitte","Enger","Exter","Ennigerloh","Geseke","Gütersloh"
+                  ,"Herzfeld","Hohenhausen","Herford","Hiddenhausen","Halle(Westf.)","Hövelbrück","Horn","Hamm","Harsewinkel"
+                  ,"Jöllenbeck"
+                  ,"Quelle"
+                  ,"Rüthen","Rheda-Wiedenbrück","Rödinghausen","Riedberg"
+                  ,"Sennestadt","Soest","Spenge","Spenge"
+                  ,"Ummeln","Lippstadt","Lemgo","Lage","Löhne","Lippspringe","Lichtenau"
+                  ,"Paderborn"
+                  ,"Möhnesee","Münster"
+                  ,"Oerlinghausen","Oelde","Ostbevern"
+                  ,"Telgte"
+                  ,"Verl","Vermold","Vlothe"
+                  ,"Werther(Westf.)","Warstein","Warendorf","Welver","Werl","Wünnenberg"];
+
+    var html_string = "<div class='panel-headline'></div><span style='overflow: auto;'>"
+    for (var j = 0; j < orte.length; j++) {
+        html_string += `<span onclick='$("#iframe").contents().find("#newMissionCityInput").val(this.innerHTML)'>${orte[j]}</span><br>`;
+    };
+    html_string += "</span>"
+    $("#chat").html(html_string);
+};
+function greet() {
+    'use strict';
+    systemMessage({
+        'title':'Systemupdate:',
+
+        'message':`Leitstelle Bielefeld:  ${parseInt($(".call-next").text()) + 1} offene Anrufe<br><br>Disponentenplatz   1:   ${$(".mission-list-icon-1").length}  Einsätze in Warteschleife`,
+        'type':'info'
+    });
+};
+function wordsMissionAlarm() {
+    'use strict';
+    const worte = ["Polizei kommt mit.","Anrufer steht auf der Straße.","RTH Christoph13 mit alamiert.","Vorsicht!Austritt von giftigen Gasen.","--------------------","Notarztindikation","Medizinischer Notfall"
+                   ,"Krankentransport","Einsatz Feuerwehr Brand","Einsatz Feuerwehr TH","Einsatz Polizei",];
+    var html_string = `<script>
+        function replaceFunc(text){
+          text = text.replace(/%text%/g, $("#newMissionCustomText").val());
+          text = text.replace(/%ort%/g, $("#newMissionCityInput").val());
+          text = text.replace(/%straße%/g, $("#newMissionRoadInput").val());
+          text = text.replace(/%nummer%/g, $("#newMissionHousenumberInput").val());
+          text = text.replace(/%name%/g, $("#newNameInput").val());
+          text = text.replace(/%stichwort%/g, $("#newMissionNameInput").val());
+          return text;
+        };
+        </script>
+        <table class="striped table-divider"><thead></thead><tbody>`;
+    for (var i = 0; i < worte.length; i++) {
+        html_string += `<tr><td onclick='$("#newMissionCustomText").val(replaceFunc(this.innerText));'>${worte[i]}</td></tr>`;
+    };
+    html_string += "</tbody></table>"
+    $(".panel-body").append(html_string);
+};
+function sChat(){
+    'use strict';
+    const worte = ['B1#Bielefeld Stadt','B1#Region Bielefeld','B1#Region Herford','B1#Bielefeld Stadt','B1#Region Bielefeld','B1#Region Herford','B1#Region Gütersloh','B2#Bielefeld Stadt','B2#Region Bielefeld','B2#Region Herford','B2#Region Gütersloh','B3#Bielefeld Stadt','B3#Region Bielefeld','B3#Region Herford','B3#Region Gütersloh','TH1#Bielefeld Stadt','TH1#Region Bielefeld','TH1#Region Herford','TH1#Region Gütersloh','ABC1#Bielefeld Stadt','ABC1#Region Bielefeld','ABC1#Region Herford','ABC1#Region Gütersloh','R1N1#Bielefeld Stadt','M-R1N1#Region Bielefeld','M-R1N1#Region Herford','M-R1N1#Region Gütersloh'];
+    let html = '<div>';
+    for(var i = 0; i < worte.length; i++){
+        html += `<input type='radio' class='sendStatus' val='${worte[i]}' name='statusCheck' id='check_${i}'><label for='check_${i}' class='labelChatSend'>${worte[i]}</label><br>`;
+    };
+    html += '<button class="button button-round button-success" id="sendMessageStatus">Status senden</button></div>';
+    $('#ad').append(html);
+    $('#sendMessageStatus').on('click', function(){
+        if($('.sendStatus.active').length != 1){
+            noticeModal('Fehler', 'Du musst einen Status auswählen! Wenn ein Status ausgewählt ist, wähle ihn bitte nochmal aus!', 'Schließen');
+            return;
+        };
+        var für = $(".sendStatus.active").attr("id");
+        try {
+            var query = document.querySelectorAll(`.labelChatSend[for='${CSS.escape(für)}']`)[0];
+        } catch(e){
+            noticeModal('Fehler', 'Bitte lade die Seite neu! Wenn der Fehler weiter auftritt, wende dich an NiZi112!', 'Schließen');
+        };
+        if(worte.indexOf(query.innerText) == -1 || !query.innerText){
+            noticeModal('Fehler2', 'Bitte lade die Seite neu! Wenn der Fehler weiter auftritt, wende dich an NiZi112!', 'Schließen');
+        }
+        $.ajax({
+            url: "/api/sendAssociationChatMessage",
+            dataType: "json",
+            type : "POST",
+            data: {
+                "message": query.innerText,
+            },
+            success : function(r) {
+            }
+        });
+        $('.sendStatus.active').removeClass('active');
+    });
+    $('.sendStatus').on('click', function(e){
+        $('.sendStatus.active').removeClass('active');
+        $(e.target).addClass('active');
+    });
+};
+function newWindow(){
+    let darkMode = false; // true oder false
+    let missionNames = [['<b>#A</b>',],
+                        ['Akutes Abdomen','Alarm Fußfessel','Alkoholintoxikation','Allergische Reaktion',],
+                        ['Angriff auf Sicherheitsdienst','Anzeige Graffiti','Atemnot','Auffahrunfall',],
+                        ['Ausgekugeltes Gelenk','----------','----------','----------',],
+                        ['<b>#B</b>',],
+                        ['Balkonbrand','Baum auf Straße','Baum droht zu fallen','Baumkrone droht herab zu stürzen',],
+                        ['Beschädigter Bahnübergang','Bewusstlose Person','Bluthochdruck','Böschungsbrand',],
+                        ['Brand in Autowerkstatt','Brand in Buchladen','Brand in Gutshaus','Brand in Holzspanplattenlager',],
+                        ['Brand in Labor','Brand in Lackiererei','Brand in Turnhalle','Brand mehrerer Fahrzeuge',],
+                        ['Brennende Bushaltestelle','Brennende Garage','Brennende Garagenreihe','Brennende Lagerhalle',],
+                        ['Brennende Landmaschine','Brennende Marktbude','Brennende Müllsammelstelle','Brennende Parkbank',],
+                        ['Brennende Straßenlaterne','Brennende Windkraftanlage','Brennender Altkleidercontainer','Brennender Baum',],
+                        ['Brennender Benzinkanister','Brennender Bus','Brennender Erdgas-PKW','Brennender Frachtcontainer',],
+                        ['Brennender Getränkeautomat','Brennender Holzstapel','Brennender Jägerhochsitz','Brennender LKW',],
+                        ['Brennender Müllwagen','Brennender Papiercontainer','Brennender PKW ','Brennender Schuppen',],
+                        ['Brennender Sperrmüll ','Brennendes Elektrogerät',' Brennendes Gebüsch','Brennendes Geschenk',],
+                        ['Brennendes Laub','Brustschmerz','Blockierte Haltestelle ','Brand in Biogasanlage',],
+                        ['<b>#C</b>',],
+                        ['Chlorgasaustritt','-----------','-----------','----------',],
+                        ['<b>#D</b>',],
+                        ['Dachstuhlbrand','----------','----------','----------',] ,
+                        ['<b>#E</b>',],
+                        ['Einbruch','Entgleister Güterzug','----------','----------',],
+                        ['<b>#F</b>',],
+                        ['Fahren ohne Fahrschein','Fahrraddiebstahl','Feuer in Autohaus','Feuer in Schule',],
+                        ['Feuer in Tiefgarage','Fraktur','----------','----------',],
+                        ['<b>#G</b>',],
+                        ['Gartenlaubenbrand','Gasgeruch','Gasleitung beschädigt','Geburt',],
+                        ['Gefahr durch Wespennest','Gefahrgut-LKW verunglückt','Gegenstände auf Fahrbahn','Geplatzte Krampfader',],
+                        ['Gestürzte Person','----------','----------','----------',],
+                        ['<b>#H</b>',],
+                        ['Herrenloses Gepäckstück','Hochgedrückter Gullydeckel','Hilflose Person in Kletteranlage','----------',],
+                        ['<b>#I</b>',],
+                        ['Identitätsfeststellung','----------','----------','----------',],
+                        ['<b>#J</b>',],
+                        ['----------','----------','----------','----------',],
+                        ['<b>#K</b>',],
+                        ['Keller unter Wasser','Kleine Ölspur','Kellerbrand','Kleiner Feldbrand ',],
+                        ['Kleiner Waldbrand','Kleinflächenbrand','Klimaanlage in Zug ausgefallen','Kreislaufbeschwerden',],
+                        ['Küchenbrand in Schnellrestaurant','Kurze Bewusstlosigkeit','----------','----------',],
+                        ['<b>#L</b>',],
+                        ['LKW gegen Ampel','LKW in Graben','Lose Dachziegel','----------',],
+                        ['<b>#M</b>',],
+                        ['Mittlere Ölspur','Mittlerer Feldbrand','Mittlerer Waldbrand','Motorradbrand ',],
+                        ['Mülleimerbrand','----------','----------','----------',],
+                        ['<b>#N</b>',],
+                        ['----------','----------','----------','----------',],
+                        ['<b>#O</b>',],
+                        ['----------','----------','----------','----------',],
+                        ['<b>#P</b>',],
+                        ['Person auf Rollfeld','Person auf Zug','Person hinter Tür',' Person in Aufzug',],
+                        ['PKW in Graben','----------','----------','----------',],
+                        ['<b>#Q</b>',],
+                        ['----------','----------','----------','----------',],
+                        ['<b>#R</b>',],
+                        ['Rückenschmerzen','----------','----------','----------',],
+                        ['<b>#S</b>',],
+                        ['Scheunenbrand','Schlaganfall','Schlägerei','Schlange in Garten',],
+                        ['Schornsteinbrand','Straße unter Wasser','Sturz aus Höhe','Schwerer Verkehrsunfall',],
+                        ['<b>#T</b>',],
+                        ['Tankwagen verliert Flüssigkeit','Tiefgarage unter Wasser','Tier auf Balkon','Tier auf Baum',],
+                        ['Tier in Gullydeckel','Tier in Keller','Tier in Zaun eingeklemmt','Trunkenheitsfahrt',],
+                        ['<b>#U</b>',],
+                        ['Unangemeldete Demonstration','Unfallaufnahme','Unterkühlung','----------',],
+                        ['<b>#V</b>',],
+                        ['Verstoß gegen das Betäubungsmittelgesetz','Verstoß gegen das Sprengstoffgesetz','Verdächtige Person','Verletzter Industriekletterer',],
+                        ['Verletzte Person in Baugrube','Verletzter Kranführer','Verunfallte Person in Abwasserschacht','----------',],
+                        ['<b>#W</b>',],
+                        ['Wildunfall','Wohnungsbrand','','',],
+                        ['<b>#X</b>',],
+                        ['----------','----------','----------','----------',],
+                        ['<b>#Y</b>',],
+                        ['----------','----------','----------','----------',],
+                        ['<b>#Z</b>',],
+                        ['----------','----------','----------','----------',],
+                        ['<b>Events Sommer</h3></b>','<b>Event Ostern</h3></b>','<b>Events Halloween</h3></b>','<b>Event Weihnachten und Winter</h3></b>',],
+                        ['Gefahr durch Wespennest','Brand in Hasenbau','Brennende Hexenhütte','Brennende Weihnachtsmarktbude',],
+                        ['Klimaanlage in Zug ausgefallen','Brand in Ostereierlager','Brennendes Geisterschloss','Brennender Weihnachtsbaum',],
+                        ['Böschungsbrand','Schokoladenhasen Intoxikation','Zombie Biss','Weihnachtsmann sitzt in Schornstein fest',],
+                        ['----------','Osterei nicht gefunden','Fledermaus in Wohnung','Brennende Weihnachtsmarktbude',],
+                        ['----------','Osterhase steckt im Bau fest','Brennende Vogelscheuche','Brennender Weihnachtsbaum',],
+                        ['----------','Verletzter Osterhase','Brennender Besen','Schwan im Eis',],
+                        ['----------','Brand in Hasenbau','Brennender Kürbis','Unterkühlung',],
+                        ['----------','Brand in Ostereierlager','Störung der Totenruhe','Person von Eiszapfen getroffen',],
+                        ['----------','Schokoladenhasen Intoxikation','Verletzte Hexe','Gestürzte Person durch Glatteis',],
+                        ['----------','----------','----------','Brennende Silvesterabfälle',]];
+
+    let missionCities = [['Stadt 1', 'Stadt'], ['Stadt 2']];
+    let missionStreets = [['Straße 1', 'Straße'], ['Straße 2']];
+    let missionHouseNumbers = [['Nummer 1', 'Nummer'], ['Nummer 2']];
+    let freeText = [['Text 1', 'Text'], ['Text 2']];
+
+    function getListFromArray(arrayList, className) {
+        let list = '<table class="table-divider striped"><tbody>';
+        arrayList.forEach((el) => {
+            list += '<tr>';
+            el.forEach((e) => {
+                list += `<td class="${className}">${e}</td>`;
+            });
+            list += '</tr>';
+        });
+        list += '</tbody></table>';
+        return list;
+    }
+
+    function buildFrameContent() {
+        return `<h2>Alarmstichworte:</h2>
+        ${getListFromArray(missionNames, 'missionName')}
+
+        <br>`
+    }
+
+    function openWindow() {
+        let newWindow;
+        if ((newWindow == null) || (newWindow.closed) || (!newWindow)) {
+            newWindow = window.open('', "Intelligenter Helfer für alles Mögliche",
+                                    "width=741 (900),height=574,resizable=yes,status=no," +
+                                    "menubar=no,location=no,scrollbars=no,toolbar=no,top=104,left=0");
+            newWindow.opener = top;
+            newWindow.focus();
+        } else {
+            newWindow.focus();
+        }
+        window.addEventListener('unload', () => {
+            newWindow.close();
+        })
+        newWindow.document.head.innerHTML = `<title>Stichworte ReSi</title><link rel="stylesheet" href="https://rettungssimulator.online/css/index.css"></link><link rel="shortcut icon" href="https://rettungssimulator.online/images/favicons/favicon.ico"></link>>`;
+        newWindow.document.body.innerHTML = buildFrameContent();
+        if(darkMode) newWindow.document.body.classList.add('dark');
+        $('.missionName', newWindow.document).on('click', (e) => {
+            $('#newMissionNameInput').val(replaceFunc($(e.target).text()));
+        });
+        $('.street', newWindow.document).on('click', (e) => {
+            $('#newMissionRoadInput').val(replaceFunc($(e.target).text()));
+        });
+        $('.houseNumber', newWindow.document).on('click', (e) => {
+            $('#newMissionHousenumberInput').val(replaceFunc($(e.target).text()));
+        });
+        $('.city', newWindow.document).on('click', (e) => {
+            $('#newMissionCityInput').val(replaceFunc($(e.target).text()));
+        });
+        $('.freeText', newWindow.document).on('click', (e) => {
+            $('#newMissionCustomText').val(replaceFunc($(e.target).text()));
+        });
+    }
+    $('body').append(`<script>
+        function replaceFunc(text){
+          text = text.replace(/%text%/g, $("#newMissionCustomText").val());
+          text = text.replace(/%ort%/g, $("#newMissionCityInput").val());
+          text = text.replace(/%straße%/g, $("#newMissionRoadInput").val());
+          text = text.replace(/%nummer%/g, $("#newMissionHousenumberInput").val());
+          text = text.replace(/%name%/g, $("#newNameInput").val());
+          text = text.replace(/%stichwort%/g, $("#newMissionNameInput").val());
+          return text;
+        };
+        </script>`)
+    $('.frame-close').before(`<button style="margin-left:10px;" class="left button button-success button-round openWindow">Einsatzstichworte</button>`);
+    $('.openWindow').on('click', openWindow)
+    //openWindow();
+}
+(function() {
+    'use strict';
+    $('#iframe').css('z-index', '20');
+    if(window.location.href.includes('/missionNew/')){
+        //case new Mission
+        //Stichworte unter den Alarmbuttons
+        wordsMissionAlarm();
+        newWindow();
+    }else if(window.location.href.endsWith('#dispo=true') || window.location.href.endsWith('&dispo=true') || window.location.href.includes('#dispo=true') || window.location.href.includes('&dispo=true')){
+        //case disposition
+        //Stichwörter in der Anzeige
+        keywordsAd();
+        //eingefärbter Alarmbutton
+        colorAlarm();
+        //große Karte
+        bigMap();
+        //Nachricht bei Chatmessage
+        chatMessage();
+        //begrüßung
+        greet();
+        //Sachen im Chat
+        wordsChat()
+        $('#ad').css({
+            'grid-area':'1 / 1 / 4 / 2',
+            'z-index':'2'
+        });
+        $('#map').hide();
+        $('#departments').hide();
+        $('#missions').css({
+            'grid-area':'1 / 3 / 4 / 4',
+            'z-index':'2'
+        });
+        $('#radio').css({
+            'grid-area':'1 / 4 / 4 / 5',
+            'z-index':'2'
+        });
+    }else if(window.location.href.endsWith('#other=true') || window.location.href.endsWith('&other=true') || window.location.href.includes('#other=true') || window.location.href.includes('&other=true')){
+        //case other
+        $('#map').hide();
+        $('#missions').hide();
+        $('#calls').hide();
+        $('#radio').hide();
+        $('#ad').css({
+            'grid-area':'1 / 2 / 4 / 3',
+            'z-index':'2'
+        });
+        $('#departments').css({
+            'grid-area':'1 / 3 / 4 / 5',
+            'z-index':'2'
+        });
+        $('#chat').css({
+            'grid-area':'1 / 1 / 4 / 2',
+            'z-index':'2'
+        });
+        $('#ad').append(`<textarea class='input-round' rows='10' autocomplete='off' id='notes_nizi_resi'>${localStorage.notesNiZi}</textarea>
+            <button class='button button-round button-success' onclick='localStorage.notesNiZi = $("#notes_nizi_resi").val();'>Speichern</button>`);
+        sChat();
+    }else if(window.location.href.endsWith('#map=true') || window.location.href.endsWith('&map=true') || window.location.href.includes('#map=true') || window.location.href.includes('&map=true')){
+        //case map
+        bigMap();
+    };
+})();

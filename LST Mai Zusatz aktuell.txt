@@ -1,0 +1,274 @@
+// ==UserScript==
+// @name         LST Mai Zusatz aktuell
+// @version      1000.0.1
+// @description  ~ no description provided ~
+// @author       NiZi112
+// @match        *://rettungssimulator.online/*
+// @match        *://beta.rettungssimulator.online/*
+// @match        *://rettungssimulator.online/missionNew/*
+// @match        *://beta.rettungssimulator.online/missionNew/*
+// @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
+// ==/UserScript==
+/* global $ toggleMap socket systemMessage noticeModal hideModal replaceFunc */
+function keywordsAd() {
+    'use strict';
+    const worte = ["VERDACHTSDIAGNOSE:","--------------------","Kopfplatzwunde","Varitzenblutung","--------------------","Schulterluxation","Tibiafraktur","Schenkelhalsfraktur","Bekannte Vorerkrankung  Osteogenesis imperfecta", "--------------------","Akutes Abdomen","Beginnende Geburt","Rückenschmerzen","Lumbago","--------------------","Alkoholintox","Rauchgasinhalation","Anaphylaktischer Schock","--------------------","Asthmatischer Anfall","Atemnot","--------------------","Synkope","Nicht ansprechbare Person","Bewußtlosigkeit","--------------------","Kreislaufbeschwerden","Hypertonie","Herzinfarkt",]
+    var html_string = "<span style='overflow:auto'>"
+    for (var i = 0; i < worte.length; i++) {
+        html_string += `<span onclick='$("#iframe").contents().find("#patientDiagnose").val(this.innerHTML)'>${worte[i]}</span><br>`;
+    };
+    html_string += "</span>"
+    $("#ad").append(html_string);
+};
+function colorAlarm() {
+    'use strict';
+    var neu = document.createElement("style");
+    neu.innerHTML = "#missionForm{border-color: light green; color: light green;} #missionForm:hover{background-color: yellow; color: red; border-color: red;}"
+    var vater = document.head;
+    document.head.appendChild(neu);
+};
+function bigMap() {
+    'use strict';
+    function toggleBigMap(){
+        setTimeout(function(){
+            toggleMap();
+        }, 1000)
+        $('header').remove();
+    };
+    if(window.location.href.endsWith('#map=true') || window.location.href.endsWith('&map=true') || window.location.href.includes('#map=true') || window.location.href.includes('&map=true')){
+        $(document).ready(toggleBigMap)
+    }else{
+        $('#ad').append('<br><a href="https://rettungssimulator.online/#map=true" class="button button-success button-round no-prevent" style="width:18%" target="_blank">Karte</a>')
+    };
+};
+function chatMessage() {
+    'use strict';
+    socket.on("associationMessage", (msg) =>{
+        if(msg.message && msg.userName != $(".username .frame-opener").html()){
+            systemMessage({
+                'title':`${msg.userName}`,
+                'message':`<span id="chatMessageAlert">${msg.message}</span>`,
+                'type':'info'
+            });
+            hideModal();
+        }
+    });
+}
+function wordsChat() {
+    'use strict';
+    const orte = ["Hannover","Auetal","Bad Eilsen","Bad Nenndorf","Bad Münder","Barsinghausen","Bückeburg","Burgdorf","Burgwedel","Egestorf","Empelde","Garbsen","Gartenstadt Lohne","Gehrden","Hemmingen","Isernhagen","Laatzen", "Landkreis Schaumburg","Langenhagen","Lauenau","Lindhorst","Minden","Neustadt am Rübenberge","Niedernwöhren"," Porta Westfalica","Ronnenberg","Rodenberg","Seelze","Sehnde","Stadthagen","Wennigsen (Deister)","Wennigser Mark","Wülferode", "Wunstorf"];
+    var html_string = "<div class='panel-headline'></div><span style='overflow: auto;'>"
+    for (var j = 0; j < orte.length; j++) {
+        html_string += `<span onclick='$("#iframe").contents().find("#newMissionCityInput").val(this.innerHTML)'>${orte[j]}</span><br>`;
+    };
+    html_string += "</span>"
+    $("#chat").html(html_string);
+};
+function greet() {
+    'use strict';
+    systemMessage({
+        'title':'Systemupdate:',
+
+        'message':`Leitstelle Hannover:  ${parseInt($(".call-next").text()) + 1} offene Anrufe<br><br>Disponentenplatz   3:   ${$(".mission-list-icon-1").length}  Einsätze in Warteschleife`,
+        'type':'info'
+    });
+};
+function wordsMissionAlarm() {
+    'use strict';
+    const worte = ["Menschenleben in Gefahr","Tierrettung","--------------------","Notarztindikation","Medizinischer Notfall","Krankentransport","Einweisung KHS","Arzt vor Ort","MANV 5","--------------------","Sturz u.2m","Sturz aus Rollstuhl","Treppensturz",];
+    var html_string = `<script>
+        function replaceFunc(text){
+          text = text.replace(/%text%/g, $("#newMissionCustomText").val());
+          text = text.replace(/%ort%/g, $("#newMissionCityInput").val());
+          text = text.replace(/%straße%/g, $("#newMissionRoadInput").val());
+          text = text.replace(/%nummer%/g, $("#newMissionHousenumberInput").val());
+          text = text.replace(/%name%/g, $("#newNameInput").val());
+          text = text.replace(/%stichwort%/g, $("#newMissionNameInput").val());
+          return text;
+        };
+        </script>
+        <table class="striped table-divider"><thead></thead><tbody>`;
+    for (var i = 0; i < worte.length; i++) {
+        html_string += `<tr><td onclick='$("#newMissionCustomText").val(replaceFunc(this.innerText));'>${worte[i]}</td></tr>`;
+    };
+    html_string += "</tbody></table>"
+    $(".panel-body").append(html_string);
+};
+function sChat(){
+    'use strict';
+    const worte = ['M-B1#Hannover Stadt','M-B1#Region Hannover','M-B1#Region Schaumburg','M-B1#Hannover Stadt','M-B1#Region Hannover','M-B1#Region Schaumburg','M-B2#Hannover Stadt','M-B2#Region Hannover','M-B2#Region Schaumburg','M-B3#Hannover Stadt','M-B3#Region Hannover','M-B3#Region Schaumburg','M-TH1#Hannover Stadt','M-TH1#Region Hannover','M-TH1#Region Schaumburg','M-ABC1#Hannover Stadt','M-ABC1#Region Hannover','M-ABC1#Region Schaumburg','M-R1N1#Hannover Stadt','M-R1N1#Region Hannover','M-R1N1#Region Schaumburg'];
+    let html = '<div>';
+    for(var i = 0; i < worte.length; i++){
+        html += `<input type='radio' class='sendStatus' val='${worte[i]}' name='statusCheck' id='check_${i}'><label for='check_${i}' class='labelChatSend'>${worte[i]}</label><br>`;
+    };
+    html += '<button class="button button-round button-success" id="sendMessageStatus">Status senden</button></div>';
+    $('#ad').append(html);
+    $('#sendMessageStatus').on('click', function(){
+        if($('.sendStatus.active').length != 1){
+            noticeModal('Fehler', 'Du musst einen Status auswählen! Wenn ein Status ausgewählt ist, wähle ihn bitte nochmal aus!', 'Schließen');
+            return;
+        };
+        var für = $(".sendStatus.active").attr("id");
+        try {
+            var query = document.querySelectorAll(`.labelChatSend[for='${CSS.escape(für)}']`)[0];
+        } catch(e){
+            noticeModal('Fehler', 'Bitte lade die Seite neu! Wenn der Fehler weiter auftritt, wende dich an NiZi112!', 'Schließen');
+        };
+        if(worte.indexOf(query.innerText) == -1 || !query.innerText){
+            noticeModal('Fehler2', 'Bitte lade die Seite neu! Wenn der Fehler weiter auftritt, wende dich an NiZi112!', 'Schließen');
+        }
+        $.ajax({
+            url: "/api/sendAssociationChatMessage",
+            dataType: "json",
+            type : "POST",
+            data: {
+                "message": query.innerText,
+            },
+            success : function(r) {
+            }
+        });
+        $('.sendStatus.active').removeClass('active');
+    });
+    $('.sendStatus').on('click', function(e){
+        $('.sendStatus.active').removeClass('active');
+        $(e.target).addClass('active');
+    });
+};
+function newWindow(){
+    let darkMode = true; // true oder false
+    let missionNames = [['Feuerwehr-Brandeinsatz', 'Feuerwehr-Techn.Hilfeleistung' , 'Rettungsdienst- Einsätze', 'Polizei- Einsätze',],['--------------------', '--------------------' , '--------------------', '--------------------' , ],['B1#Unklare Rauchentwicklung', 'TH0#klein' , 'R1N1#Notfall', 'P1#Personenüberprüfung',],['B0#Kleinstbrand A', 'TH0#Person in Notlage' , 'R1#Notfall', 'BP1#Personenüberprüfung',],['B0#Kleinstbrand AB', 'TH0;R1#Person in Notlage' , 'R1#Einweisung', 'P1#Personalienfeststellung',], ['--------------------', '' , 'R1#Krankentransport', 'BP1#Personalienfeststellung',],['B0#Hochsitz', 'TH0;DL#Droht zu fallen Baum/Baumkrone','', 'BP1;R1#BTMG-Verstoß',],['B0#Baum', 'TH0#Baum auf Straße','','',],['','','', 'P5#Unangemeldete Demonstration',],['B0#Kleinflächenbrand','','','BP2#Aggressive Person',],['B0#Feldbrand klein', '','','P1#Schlägerei',],['B0#Feldbrand mittel', '','','P2;R1#Körperverletzung',],['B0#Waldbrand klein','','', 'P2#Automatischer Fußfessel-Alarm',],['M-B1#Waldbrand mittel', '','','',],['B1#Windkraftanlage','','', 'P1#Ruhestörung',],['--------------------','','', 'P1#Sachbeschädigung',], ['B0#Frachtcontainer', 'M-ABC1#Leckage Tanklastzug','','P1#Vandalismus',],['B0#Altkleidercontainer', '','','',],['B0#Papiercontainer','','', 'P1#Erschleichen von Leistungen',],['B1#Papiercontainer','','', 'BP1#Erschleichen von Leistungen',],['B0#Sperrmüll','','', 'P1#Diebstahl',],['B1#Müllsammelstelle', '','','P1#Raub',],['B2Y#Bürogebäude UG-Mülllager', '','','P1#Einbruch',],['--------------------', '','','BP1#Einbruch',],['B0#Motorrad','','', 'P1;R1#Einbruch',],['B0#Traktor','','', 'BP1;R1#Einbruch'],['B0#PKW', 'TH1;R1#VU#PKW in Graben','','BP1;R1#Einbruch',], ['B0#SUV','','', '',],['B1#Mehrere PKW´s','','', 'P2#Gegenstände auf der Fahrbahn',],['B0#LKW', 'TH1;R1N1#VU#LKW in Graben','','P1#Unfallaufnahme',],['B1#Müllwagen', 'THO;RW#VU#LKW gegen Ampel','','P1#Auffahrunfall',],['B1Y#Bus', 'M-TH1#Güterzug entgleist','','P1#Wildunfall',],['--------------------','','', '',], ['B0#Schuppen', '','','BP2#Verdächtiger Gegenstand',],['B0#Gartenlaube','','', 'BP1#Störung Bahnübergang',],['B1#Garage', '','','BP1#Gefährlicher Eingriff in den Bahnverkehr',],['B1#Garagenreihe', 'TH0#Straße unter Wasser'],['B1#Tiefgarage', 'TH1#Tiefgarage unter Wasser'],['--------------------', ''], ['B1#Kellerbrand', 'TH0#Keller unter Wasser'],['B1#Wohnungsbrand', ''],['B1Y#Wohnungsbrand', ''],['B1#Balkonbrand', ''],['B1#Schornsteinbrand', ''],['B1#Dachstuhlbrand', 'TH0;DL#Dachsicherung'], ['', ''],['~~~~~~~~~~~~', ''],['B0#Marktstand', ''],['B1#Schnellrestaurant', ''],['B1#Bücherladen', ''],['B1#Autowerkstatt', 'TH0#Ölspur klein'], ['M-B2Y#Explosion in Autowerkstatt', 'TH1#Ölspur groß'],['B1#Lackiererei', 'ABC1#Gasgeruch'],['B1#Verpuffung', 'ABC1#Leckage Gasleitung'],['B1#Lagerhalle', ''],['M-B2#Lagerhalle', ''],['M-B2#Autohaus', ''], ['B1#Schule', ''],['B2Y;G1#Schule', ''],['M-B2#Sporthalle', ''],['B1Y#Hochhaus', ''],['M-B2#Gutshaus', 'TH0#Tierrettung'],['M-B3#Bauernhof', 'TH0;DL#Tierrettung'], ['M-B3#Scheune', 'TH0;RW#Tierrettung']];
+    let missionCities = [['Stadt 1', 'Stadt'], ['Stadt 2']];
+    let missionStreets = [['Straße 1', 'Straße'], ['Straße 2']];
+    let missionHouseNumbers = [['Nummer 1', 'Nummer'], ['Nummer 2']];
+    let freeText = [['Text 1', 'Text'], ['Text 2']];
+
+    function getListFromArray(arrayList, className) {
+        let list = '<table class="table-divider striped"><tbody>';
+        arrayList.forEach((el) => {
+            list += '<tr>';
+            el.forEach((e) => {
+                list += `<td class="${className}">${e}</td>`;
+            });
+            list += '</tr>';
+        });
+        list += '</tbody></table>';
+        return list;
+    }
+
+    function buildFrameContent() {
+        return `<h2>Alarmstichworte:</h2>
+        ${getListFromArray(missionNames, 'missionName')}
+       
+        <br>`
+    }
+
+    function openWindow() {
+        let newWindow;
+        if ((newWindow == null) || (newWindow.closed) || (!newWindow)) {
+            newWindow = window.open('', "Intelligenter Helfer für alles Mögliche",
+                                    "width=741 (360),height=574,resizable=yes,status=no," +
+                                    "menubar=no,location=no,scrollbars=no,toolbar=no,top=104,left=0");
+            newWindow.opener = top;
+            newWindow.focus();
+        } else {
+            newWindow.focus();
+        }
+        window.addEventListener('unload', () => {
+            newWindow.close();
+        })
+        newWindow.document.head.innerHTML = `<title>Stichworte ReSi</title><link rel="stylesheet" href="https://rettungssimulator.online/css/index.css"></link><link rel="shortcut icon" href="https://rettungssimulator.online/images/favicons/favicon.ico"></link>>`;
+        newWindow.document.body.innerHTML = buildFrameContent();
+        if(darkMode) newWindow.document.body.classList.add('dark');
+        $('.missionName', newWindow.document).on('click', (e) => {
+            $('#newMissionNameInput').val(replaceFunc($(e.target).text()));
+        });
+        $('.street', newWindow.document).on('click', (e) => {
+            $('#newMissionRoadInput').val(replaceFunc($(e.target).text()));
+        });
+        $('.houseNumber', newWindow.document).on('click', (e) => {
+            $('#newMissionHousenumberInput').val(replaceFunc($(e.target).text()));
+        });
+        $('.city', newWindow.document).on('click', (e) => {
+            $('#newMissionCityInput').val(replaceFunc($(e.target).text()));
+        });
+        $('.freeText', newWindow.document).on('click', (e) => {
+            $('#newMissionCustomText').val(replaceFunc($(e.target).text()));
+        });
+    }
+    $('body').append(`<script>
+        function replaceFunc(text){
+          text = text.replace(/%text%/g, $("#newMissionCustomText").val());
+          text = text.replace(/%ort%/g, $("#newMissionCityInput").val());
+          text = text.replace(/%straße%/g, $("#newMissionRoadInput").val());
+          text = text.replace(/%nummer%/g, $("#newMissionHousenumberInput").val());
+          text = text.replace(/%name%/g, $("#newNameInput").val());
+          text = text.replace(/%stichwort%/g, $("#newMissionNameInput").val());
+          return text;
+        };
+        </script>`)
+    $('.frame-close').before(`<button style="margin-left:10px;" class="right button button-success button-round openWindow">Einsatzstichworte</button>`);
+    $('.openWindow').on('click', openWindow)
+    //openWindow();
+}
+(function() {
+    'use strict';
+    $('#iframe').css('z-index', '20');
+    if(window.location.href.includes('/missionNew/')){
+        //case new Mission
+        //Stichworte unter den Alarmbuttons
+        wordsMissionAlarm();
+        newWindow();
+    }else if(window.location.href.endsWith('#dispo=true') || window.location.href.endsWith('&dispo=true') || window.location.href.includes('#dispo=true') || window.location.href.includes('&dispo=true')){
+        //case disposition
+        //Stichwörter in der Anzeige
+        keywordsAd();
+        //eingefärbter Alarmbutton
+        colorAlarm();
+        //große Karte
+        bigMap();
+        //Nachricht bei Chatmessage
+        chatMessage();
+        //begrüßung
+        greet();
+        //Sachen im Chat
+        wordsChat()
+        $('#ad').css({
+            'grid-area':'1 / 1 / 4 / 2',
+            'z-index':'2'
+        });
+        $('#map').hide();
+        $('#departments').hide();
+        $('#missions').css({
+            'grid-area':'1 / 3 / 4 / 4',
+            'z-index':'2'
+        });
+        $('#radio').css({
+            'grid-area':'1 / 4 / 4 / 5',
+            'z-index':'2'
+        });
+    }else if(window.location.href.endsWith('#other=true') || window.location.href.endsWith('&other=true') || window.location.href.includes('#other=true') || window.location.href.includes('&other=true')){
+        //case other
+        $('#map').hide();
+        $('#missions').hide();
+        $('#calls').hide();
+        $('#radio').hide();
+        $('#ad').css({
+            'grid-area':'1 / 2 / 4 / 3',
+            'z-index':'2'
+        });
+        $('#departments').css({
+            'grid-area':'1 / 3 / 4 / 5',
+            'z-index':'2'
+        });
+        $('#chat').css({
+            'grid-area':'1 / 1 / 4 / 2',
+            'z-index':'2'
+        });
+        $('#ad').append(`<textarea class='input-round' rows='10' autocomplete='off' id='notes_nizi_resi'>${localStorage.notesNiZi}</textarea>
+            <button class='button button-round button-success' onclick='localStorage.notesNiZi = $("#notes_nizi_resi").val();'>Speichern</button>`);
+        sChat();
+    }else if(window.location.href.endsWith('#map=true') || window.location.href.endsWith('&map=true') || window.location.href.includes('#map=true') || window.location.href.includes('&map=true')){
+        //case map
+        bigMap();
+    };
+})();
